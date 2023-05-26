@@ -1,0 +1,7 @@
+body{
+    margin: 0 auto;
+    width: 700px;
+}
+#root{
+    background-color: beige;
+}
