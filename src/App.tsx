@@ -1,32 +1,29 @@
 import styled from 'styled-components';
-import {ChangeEvent, useState} from 'react';
+import {ChangeEvent, useCallback, useState} from 'react';
 import { Footer } from './components/footer';
+import { MemoList } from './components/MemoList';
+import { useMemoList } from './hooks/useMemoList';
 
 export const App = () => {
+  //사용자 정의 훅 얻기
+  const {memos, addTodo, deleteTodo} = useMemoList();
+
   //텍스트 박스 state
   const [text, setText] = useState<string>("");
-  //메모 목록 state
-  const [memos, setMemos] = useState<string[]>([]);
 
   //추가 버튼
   const onClickAdd = () => {
-    //state 정상적 감지위한 새 배열 생성
-    const newMemos = [...memos];
-    newMemos.push(text);
-    //입력 text를 넣은 배열을 memos안에 넣기
-    setMemos(newMemos);
-    //input 비우기
-    setText("");
+   //사용자 정의 훅 사용
+   addTodo(text);
+   //텍스트 박스 빈칸 만들기
+   setText("");
   }
 
-  //삭제 버튼
-  const onClickDelete = (index: number) => {
-    //state 정상적 감지위한 새 배열 생성
-    const newMemos = [...memos];
-    newMemos.splice(index,1);
-    //index 값 삭제한 배열을 memos안에 넣기
-    setMemos(newMemos);
-  }
+  //삭제 버튼, 삭제 함수 사용하면 렌더링
+  const onClickDelete = useCallback((index: number) => {
+    //사용자 정의 훅 사용
+    deleteTodo(index);
+  }, [deleteTodo]);
 
   //텍스트 박스 내용 state에 설정
   const onChangeText = (e: ChangeEvent<HTMLInputElement>) =>  setText(e.target.value);
@@ -34,22 +31,12 @@ export const App = () => {
 
   return (
     <div style={{width: "600px", margin: "0 50px"}}>
-      <SH1>간단 메모 애플리케이션</SH1>
+      <SH1>간단한 메모장</SH1>
       <SInput type='text' value={text} onChange={onChangeText} />
       <SButton onClick={onClickAdd}>추가</SButton>
 
-      <SContainer>
-        <SP>메모 목록</SP>
-        <ul>
-          {memos.map((memo, index) => (
-            <li key={memo}>
-              <SMemoWrapper>
-                <p>{memo}</p><SButton onClick={() => onClickDelete(index)}>삭제</SButton>
-              </SMemoWrapper>
-            </li>
-          ))}
-        </ul>
-      </SContainer>
+      <MemoList memos={memos} onClickDelete={onClickDelete} />
+
       <Footer/>
     </div>
   );
@@ -67,20 +54,6 @@ const SButton = styled.button`
   }
 `;
 
-const SContainer = styled.div`
-  border: solid 1px #ccc;
-  width: 600px;
-  padding: 16px 0;
-  margin-top: 10px;
-  background-color: white;
-`;
-
-const SMemoWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
 const SInput = styled.input`
   width: 510px;
 `;
@@ -90,8 +63,3 @@ const SH1 = styled.h1`
   line-height: 32px;
   padding: 30px;
 `;
-
-const SP = styled.p`
-  text-align: center;
-  color: gray;
-`
